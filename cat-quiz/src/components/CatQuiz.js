@@ -7,69 +7,65 @@ function CatQuiz() {
   const [catData, setCatData] = useState(null);
   const [quizOptions, setQuizOptions] = useState([]);
   const [correctAnswer, setCorrectAnswer] = useState('');
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
 
   useEffect(() => {
-    console.log('Effect hook triggered');
-    axios.get('https://api.thecatapi.com/v1/images/search?limit=1&has_breeds=1', {
-      headers: {
-        'x-api-key': 'live_m7TgIOUiD4HrmB2kR8CBTHHeOKEZjpjYlQH7X3Dr3TdK5VlexVIuoDa5mr4yn8vF'
-      }
-    })
-    .then(response => {
-      const catData = response.data[0];
-      console.log(catData.id);
-      setCatData(catData);
+    fetchNewQuestion();
+  }, [currentQuestionIndex]);
 
-      axios.get(`https://api.thecatapi.com/v1/images/${catData.id}`, {
-        headers: {
-          'x-api-key': 'live_m7TgIOUiD4HrmB2kR8CBTHHeOKEZjpjYlQH7X3Dr3TdK5VlexVIuoDa5mr4yn8vF'
-        }
-      })
+  const fetchNewQuestion = () => {
+    // Fetch random cat image and breed information
+    axios.get('https://api.thecatapi.com/v1/images/search?limit=1&has_breeds=1')
       .then(response => {
-        const breedName = response.data.breeds[0]?.name;
-        console.log(breedName)
+        const catData = response.data[0];
+        setCatData(catData);
 
-        axios.get('https://api.thecatapi.com/v1/breeds', {
-          headers: {
-            'x-api-key': 'live_m7TgIOUiD4HrmB2kR8CBTHHeOKEZjpjYlQH7X3Dr3TdK5VlexVIuoDa5mr4yn8vF'
-          }
-        })
+        axios.get(`https://api.thecatapi.com/v1/images/${catData.id}`)
+          .then(response => {
+            const breedName = response.data.breeds[0]?.name;
+            setCorrectAnswer(breedName);
+            setQuizOptions([]); // Clear previous quiz options
+          })
+          .catch(error => console.error('Error fetching breed details:', error));
+      })
+      .catch(error => console.error('Error fetching cat image:', error));
+  };
+
+  const handleAnswerSelect = (selectedBreed) => {
+    console.log('Answer selected:', selectedBreed);
+    if (selectedBreed === correctAnswer) {
+      // If the answer is correct, fetch a new question
+      setCurrentQuestionIndex(prevIndex => {
+        console.log('Previous index:', prevIndex);
+        return prevIndex + 1;
+      });
+      setCorrectAnswer(''); // Reset correct answer
+      console.log('Correct answer selected. Fetching new question...');
+    }
+  };
+  
+
+  useEffect(() => {
+    // Fetch cat breeds and set quiz options when correctAnswer changes
+    if (correctAnswer) {
+      axios.get('https://api.thecatapi.com/v1/breeds')
         .then(response => {
           const breeds = response.data.map(breed => breed.name);
           const shuffledBreeds = breeds.sort(() => Math.random() - 0.5);
-          const quizOptions = shuffledBreeds.slice(0, 3);
-          quizOptions.push(breedName);
-
-          const shuffledOptions = quizOptions.sort(() => Math.random() - 0.5);
-
-          setQuizOptions(shuffledOptions);
-          setCorrectAnswer(breedName);
-          console.log('Breed of the cat:', breedName);
+          const newQuizOptions = shuffledBreeds.slice(0, 3);
+          newQuizOptions.push(correctAnswer); // Add the correct answer as an option
+          setQuizOptions(newQuizOptions);
         })
-        .catch(error => {
-          console.error('Error fetching cat breeds:', error);
-        });
-      })
-      .catch(error => {
-        console.error('Error fetching cat image:', error);
-      });
-    })
-    .catch(error => {
-      console.error('Error fetching cat image:', error);
-    });
-
-    return () => {
-      console.log('Component is unmounting');
-    };
-
-  }, []);
+        .catch(error => console.error('Error fetching cat breeds:', error));
+    }
+  }, [correctAnswer]);
 
   return (
     <div>
       {catData && (
         <div>
           <CatImage imageUrl={catData.url} />
-          <Quiz options={quizOptions} correctAnswer={correctAnswer} />
+          <Quiz options={quizOptions} correctAnswer={correctAnswer} onAnswerSelect={handleAnswerSelect} />
         </div>
       )}
     </div>

@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function Quiz({ options, correctAnswer }) {
+function Quiz({ options, correctAnswer, onAnswerSelect }) {
   const [selectedAnswer, setSelectedAnswer] = useState('');
 
   const handleOptionClick = (option) => {
     setSelectedAnswer(option);
+    onAnswerSelect(option);
   };
+
+  useEffect(() => {
+    // Trigger a re-render when the selected answer changes
+  }, [selectedAnswer]);
 
   return (
     <div>
