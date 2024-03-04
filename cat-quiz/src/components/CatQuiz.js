@@ -53,8 +53,11 @@ function CatQuiz() {
           const breeds = response.data.map(breed => breed.name);
           const shuffledBreeds = breeds.sort(() => Math.random() - 0.5);
           const newQuizOptions = shuffledBreeds.slice(0, 3);
+          
           newQuizOptions.push(correctAnswer); // Add the correct answer as an option
-          setQuizOptions(newQuizOptions);
+          const shuffledOptions = newQuizOptions.sort(() => Math.random() - 0.5);
+          
+          setQuizOptions(shuffledOptions);
         })
         .catch(error => console.error('Error fetching cat breeds:', error));
     }
@@ -65,7 +68,7 @@ function CatQuiz() {
       {catData && (
         <div>
           <CatImage imageUrl={catData.url} />
-          <Quiz options={quizOptions} correctAnswer={correctAnswer} onAnswerSelect={handleAnswerSelect} />
+          <Quiz options={quizOptions} correctAnswer={correctAnswer} onAnswerSelect={handleAnswerSelect} questionNumber={currentQuestionIndex + 1} />
         </div>
       )}
     </div>

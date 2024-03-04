@@ -1,5 +1,6 @@
 import React from 'react';
 import './App.css';
+import './CatImage.css';
 import CatQuiz from './components/CatQuiz'; // Importing CatQuiz component
 
 function App() {

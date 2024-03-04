@@ -1,0 +1,6 @@
+.cat-image {
+    width: 20rem; /* Set to the desired width */
+    height: 20rem; /* Set to the desired height */
+    object-fit: contain; /* or 'contain' depending on your preference */
+  }
+  

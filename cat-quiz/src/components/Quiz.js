@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function Quiz({ options, correctAnswer, onAnswerSelect }) {
+function Quiz({ options, correctAnswer, onAnswerSelect, questionNumber }) {
   const [selectedAnswer, setSelectedAnswer] = useState('');
+  const [showFeedback, setShowFeedback] = useState(false);
 
   const handleOptionClick = (option) => {
     setSelectedAnswer(option);
-    onAnswerSelect(option);
-  };
+    setShowFeedback(true);
 
-  useEffect(() => {
-    // Trigger a re-render when the selected answer changes
-  }, [selectedAnswer]);
+    //5 Seconds delay to show result
+    setTimeout(() => {
+      onAnswerSelect(option);
+      setSelectedAnswer('');
+      setShowFeedback(false);
+    }, 2000);
+  };
 
   return (
     <div>
-      <h2>What breed is this cat?</h2>
+      <h2> Q{questionNumber} What breed is this cat?</h2>
       <ul>
         {options.map((option, index) => (
           <li key={index} onClick={() => handleOptionClick(option)}>
@@ -22,7 +26,7 @@ function Quiz({ options, correctAnswer, onAnswerSelect }) {
           </li>
         ))}
       </ul>
-      {selectedAnswer && (
+      {showFeedback && (
         <p>{selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect!'}</p>
       )}
     </div>
