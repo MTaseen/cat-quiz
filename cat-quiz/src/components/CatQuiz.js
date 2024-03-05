@@ -19,7 +19,6 @@ function CatQuiz() {
         const catData = response.data[0];
 
         setCatData(catData);
-        console.log(catData);
 
         axios.get(`https://api.thecatapi.com/v1/images/${catData.id}`)
           .then(response => {
@@ -58,12 +57,10 @@ function CatQuiz() {
   }, [currentQuestionIndex, fetchNewQuestion]);
 
   const handleAnswerSelect = (selectedBreed) => {
-    console.log('Answer selected:', selectedBreed);
     const isCorrect = selectedBreed === correctAnswer;
     setCorrectCount(prevCount => prevCount + (selectedBreed === correctAnswer ? 1 : 0));
     setCurrentQuestionIndex(prevIndex => prevIndex + 1);
     setCorrectAnswer(''); // Reset correct answer
-    console.log('Fetching new question...');
     localStorage.setItem('correctCount', correctCount + (isCorrect ? 1 : 0));
     localStorage.setItem('currentQuestionIndex', currentQuestionIndex + 1);
   };
@@ -109,7 +106,7 @@ function CatQuiz() {
       {catData && (
         <Box sx={{ flexDirection: 'column', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Grid item xs={12}>
-          <Typography variant="h6">{correctCount} of {currentQuestionIndex} ({((correctCount / currentQuestionIndex) * 100).toFixed(2)}% correct)</Typography>
+          <Typography variant="h6">Score: {correctCount} of {currentQuestionIndex} ({((correctCount / currentQuestionIndex) * 100).toFixed(2)}% correct)</Typography>
           </Grid>
           <Grid item xs={12}>
             <Box sx={{ borderRadius: '8px', border: '1px solid #ccc'}}>

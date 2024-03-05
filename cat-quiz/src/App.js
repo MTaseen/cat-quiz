@@ -1,6 +1,5 @@
 import React from 'react';
 import './App.css';
-import './CatImage.css';
 import CatQuiz from './components/CatQuiz';
 import { Box, Typography } from '@mui/material'
 
