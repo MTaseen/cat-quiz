@@ -60,7 +60,7 @@ function CatQuiz() {
     const isCorrect = selectedBreed === correctAnswer;
     setCorrectCount(prevCount => prevCount + (selectedBreed === correctAnswer ? 1 : 0));
     setCurrentQuestionIndex(prevIndex => prevIndex + 1);
-    setCorrectAnswer(''); // Reset correct answer
+    setCorrectAnswer('');
     localStorage.setItem('correctCount', correctCount + (isCorrect ? 1 : 0));
     localStorage.setItem('currentQuestionIndex', currentQuestionIndex + 1);
   };
