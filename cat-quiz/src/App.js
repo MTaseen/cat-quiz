@@ -1,14 +1,15 @@
 import React from 'react';
 import './App.css';
 import './CatImage.css';
-import CatQuiz from './components/CatQuiz'; // Importing CatQuiz component
+import CatQuiz from './components/CatQuiz';
+import { Box, Typography } from '@mui/material'
 
 function App() {
   return (
-    <div className="App">
-      <h1>Cat Quiz App</h1>
+    <Box className="App">
+      <Typography variant="h2">Cat Quiz App</Typography>
       <CatQuiz />
-    </div>
+    </Box>
   );
 }
 

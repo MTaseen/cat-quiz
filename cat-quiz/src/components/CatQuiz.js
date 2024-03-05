@@ -1,49 +1,90 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import CatImage from './CatImage';
 import Quiz from './Quiz';
+import { Box, Typography, Grid } from '@mui/material';
+
 
 function CatQuiz() {
   const [catData, setCatData] = useState(null);
   const [quizOptions, setQuizOptions] = useState([]);
   const [correctAnswer, setCorrectAnswer] = useState('');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
 
-  useEffect(() => {
-    fetchNewQuestion();
-  }, [currentQuestionIndex]);
-
-  const fetchNewQuestion = () => {
+  const fetchNewQuestion = useCallback(() => {
     // Fetch random cat image and breed information
     axios.get('https://api.thecatapi.com/v1/images/search?limit=1&has_breeds=1')
       .then(response => {
         const catData = response.data[0];
+
         setCatData(catData);
+        console.log(catData);
 
         axios.get(`https://api.thecatapi.com/v1/images/${catData.id}`)
           .then(response => {
+
+            const catDataBreed = response.data;
+            if (catDataBreed.breeds.length !== 1) {
+              
+              fetchNewQuestion();
+              return;
+            } else {
             const breedName = response.data.breeds[0]?.name;
             setCorrectAnswer(breedName);
-            setQuizOptions([]); // Clear previous quiz options
+            setQuizOptions([]);
+            }
           })
           .catch(error => console.error('Error fetching breed details:', error));
       })
       .catch(error => console.error('Error fetching cat image:', error));
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchNewQuestion();
+    const savedQuestionNumber = parseInt(localStorage.getItem('currentQuestionIndex'));
+    if (!isNaN(savedQuestionNumber)) {
+      setCurrentQuestionIndex(savedQuestionNumber);
+    }
+    const savedCorrectCount = parseInt(localStorage.getItem('correctCount'));
+    if (!isNaN(savedCorrectCount)) {
+      setCorrectCount(savedCorrectCount);
+    }
+        window.addEventListener('storage', handleStorageChange);
+
+        return () => {
+          window.removeEventListener('storage', handleStorageChange);
+        };
+  }, [currentQuestionIndex, fetchNewQuestion]);
 
   const handleAnswerSelect = (selectedBreed) => {
     console.log('Answer selected:', selectedBreed);
-    if (selectedBreed === correctAnswer) {
-      // If the answer is correct, fetch a new question
-      setCurrentQuestionIndex(prevIndex => {
-        console.log('Previous index:', prevIndex);
-        return prevIndex + 1;
-      });
-      setCorrectAnswer(''); // Reset correct answer
-      console.log('Correct answer selected. Fetching new question...');
-    }
+    const isCorrect = selectedBreed === correctAnswer;
+    setCorrectCount(prevCount => prevCount + (selectedBreed === correctAnswer ? 1 : 0));
+    setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+    setCorrectAnswer(''); // Reset correct answer
+    console.log('Fetching new question...');
+    localStorage.setItem('correctCount', correctCount + (isCorrect ? 1 : 0));
+    localStorage.setItem('currentQuestionIndex', currentQuestionIndex + 1);
   };
   
+  const handleStorageChange = (event) => {
+    if (event.key === 'currentQuestionIndex') {
+      // Retrieve and parse the updated question number from localStorage
+      const updatedQuestionIndex = parseInt(event.newValue);
+      if (!isNaN(updatedQuestionIndex)) {
+        // Update the component state with the updated question number
+        setCurrentQuestionIndex(updatedQuestionIndex);
+      }
+    } else if (event.key === 'correctCount') {
+      // Retrieve and parse the updated correct count from localStorage
+      const updatedCorrectCount = parseInt(event.newValue);
+      if (!isNaN(updatedCorrectCount)) {
+        // Update the component state with the updated correct count
+        setCorrectCount(updatedCorrectCount);
+      }
+    }
+  };
 
   useEffect(() => {
     // Fetch cat breeds and set quiz options when correctAnswer changes
@@ -54,7 +95,7 @@ function CatQuiz() {
           const shuffledBreeds = breeds.sort(() => Math.random() - 0.5);
           const newQuizOptions = shuffledBreeds.slice(0, 3);
           
-          newQuizOptions.push(correctAnswer); // Add the correct answer as an option
+          newQuizOptions.push(correctAnswer);
           const shuffledOptions = newQuizOptions.sort(() => Math.random() - 0.5);
           
           setQuizOptions(shuffledOptions);
@@ -64,14 +105,26 @@ function CatQuiz() {
   }, [correctAnswer]);
 
   return (
-    <div>
+    <Box sx={{ flexDirection: 'down', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {catData && (
-        <div>
-          <CatImage imageUrl={catData.url} />
-          <Quiz options={quizOptions} correctAnswer={correctAnswer} onAnswerSelect={handleAnswerSelect} questionNumber={currentQuestionIndex + 1} />
-        </div>
+        <Box sx={{ flexDirection: 'column', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Grid item xs={12}>
+          <Typography variant="h6">{correctCount} of {currentQuestionIndex} ({((correctCount / currentQuestionIndex) * 100).toFixed(2)}% correct)</Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Box sx={{ borderRadius: '8px', border: '1px solid #ccc'}}>
+              <CatImage imageUrl={catData.url} />
+            </Box>
+          </Grid>
+          <Grid item xs={12}>
+            <div className="answers-list">
+              <Quiz options={quizOptions} correctAnswer={correctAnswer} onAnswerSelect={handleAnswerSelect} questionNumber={currentQuestionIndex + 1} />
+            </div>
+          </Grid>
+        </Box>
       )}
-    </div>
+    </Box>
+
   );
 }
 

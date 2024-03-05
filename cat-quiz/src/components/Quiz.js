@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Box, Typography, Button, Grid } from '@mui/material';
 
 function Quiz({ options, correctAnswer, onAnswerSelect, questionNumber }) {
   const [selectedAnswer, setSelectedAnswer] = useState('');
@@ -8,7 +9,7 @@ function Quiz({ options, correctAnswer, onAnswerSelect, questionNumber }) {
     setSelectedAnswer(option);
     setShowFeedback(true);
 
-    //5 Seconds delay to show result
+    //2 Seconds delay to show result
     setTimeout(() => {
       onAnswerSelect(option);
       setSelectedAnswer('');
@@ -17,19 +18,33 @@ function Quiz({ options, correctAnswer, onAnswerSelect, questionNumber }) {
   };
 
   return (
-    <div>
-      <h2> Q{questionNumber} What breed is this cat?</h2>
-      <ul>
+    <Box>
+      <Typography variant="h2">Q{questionNumber} What breed is this cat?</Typography>
+      <Grid container spacing={2} direction="column" alignItems="center">
         {options.map((option, index) => (
-          <li key={index} onClick={() => handleOptionClick(option)}>
-            {option}
-          </li>
+          <Grid item key={index}>
+            <Button
+              variant="outlined"
+              sx={{
+                width: '20rem',
+                borderRadius: '8px',
+                padding: '12px',
+                fontSize: '1.2rem',
+                cursor: 'pointer',
+              }}
+              onClick={() => handleOptionClick(option)}
+            >
+              {option}
+            </Button>
+          </Grid>
         ))}
-      </ul>
+      </Grid>
       {showFeedback && (
-        <p>{selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect!'}</p>
+        <Typography variant="body1">
+          {selectedAnswer === correctAnswer ? 'Correct!' : 'Incorrect!'}
+        </Typography>
       )}
-    </div>
+    </Box>
   );
 }
 
